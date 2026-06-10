@@ -413,40 +413,52 @@
   </div>
 
   <script>
-    // ── 仙剑链式跟随特效 ──
+    // ── 粒子网格 + 鼠标吸引特效 ──
     const dot    = document.getElementById('cursor-dot');
     const ring   = document.getElementById('cursor-ring');
     const canvas = document.getElementById('cursor-trail-canvas');
     const ctx    = canvas.getContext('2d');
 
-    const N     = 28;   // 链节点数量
-    const EASE  = 0.22; // 头节点跟随速度（越大越灵敏）
-    const CHAIN = 0.17; // 链节间跟随速度
-
+    let W, H;
+    let particles = [];
     let mouse   = { x: -500, y: -500 };
-    let nodes   = Array.from({ length: N }, () => ({ x: -500, y: -500 }));
     let ringX   = -500, ringY = -500;
-    let ripples = [];
 
-    function resizeCanvas() {
-      canvas.width  = window.innerWidth;
-      canvas.height = window.innerHeight;
+    const CONNECT_DIST = 140;   // 粒子间连线距离
+    const MOUSE_DIST   = 220;   // 鼠标影响半径
+    const ATTRACT      = 0.032; // 吸引力强度
+    const MAX_SPEED    = 1.8;   // 最大速度
+
+    function resize() {
+      W = canvas.width  = window.innerWidth;
+      H = canvas.height = window.innerHeight;
     }
-    resizeCanvas();
-    window.addEventListener('resize', resizeCanvas);
+    resize();
+    window.addEventListener('resize', () => { resize(); initParticles(); });
+
+    function randBetween(a, b) { return a + Math.random() * (b - a); }
+
+    function createParticle() {
+      return {
+        x:  Math.random() * W,
+        y:  Math.random() * H,
+        vx: randBetween(-0.45, 0.45),
+        vy: randBetween(-0.45, 0.45),
+        r:  randBetween(0.8, 2.0),
+      };
+    }
+
+    function initParticles() {
+      const count = Math.min(Math.round(W * H / 9500), 130);
+      particles = Array.from({ length: count }, createParticle);
+    }
+    initParticles();
 
     document.addEventListener('mousemove', e => {
       mouse.x = e.clientX;
       mouse.y = e.clientY;
       dot.style.left = mouse.x + 'px';
       dot.style.top  = mouse.y + 'px';
-    });
-
-    // 点击产生扩散涟漪
-    document.addEventListener('click', e => {
-      ripples.push({ x: e.clientX, y: e.clientY, r: 5,  a: 0.9 });
-      ripples.push({ x: e.clientX, y: e.clientY, r: 5,  a: 0.5, lag: 6 });
-      ripples.push({ x: e.clientX, y: e.clientY, r: 5,  a: 0.3, lag: 14 });
     });
 
     document.addEventListener('mouseover', e => {
@@ -456,81 +468,93 @@
       if (e.target.closest('a,button')) document.body.classList.remove('cursor-hover');
     });
 
+    function updateParticle(p) {
+      // 鼠标吸引
+      const dx   = mouse.x - p.x;
+      const dy   = mouse.y - p.y;
+      const dist = Math.hypot(dx, dy);
+      if (dist < MOUSE_DIST && dist > 1) {
+        const force = ((MOUSE_DIST - dist) / MOUSE_DIST) * ATTRACT;
+        p.vx += (dx / dist) * force;
+        p.vy += (dy / dist) * force;
+      }
+
+      // 速度限制 + 阻尼（防止粒子越来越快）
+      const speed = Math.hypot(p.vx, p.vy);
+      if (speed > MAX_SPEED) {
+        p.vx = (p.vx / speed) * MAX_SPEED;
+        p.vy = (p.vy / speed) * MAX_SPEED;
+      }
+      p.vx *= 0.995;
+      p.vy *= 0.995;
+
+      p.x += p.vx;
+      p.y += p.vy;
+
+      // 边界反弹
+      if (p.x < 0)  { p.x = 0;  p.vx *= -1; }
+      if (p.x > W)  { p.x = W;  p.vx *= -1; }
+      if (p.y < 0)  { p.y = 0;  p.vy *= -1; }
+      if (p.y > H)  { p.y = H;  p.vy *= -1; }
+    }
+
+    function drawLine(x0, y0, x1, y1, alpha, width) {
+      ctx.beginPath();
+      ctx.moveTo(x0, y0);
+      ctx.lineTo(x1, y1);
+      ctx.strokeStyle = `rgba(225,222,195,${alpha})`;
+      ctx.lineWidth   = width;
+      ctx.stroke();
+    }
+
     function render() {
       requestAnimationFrame(render);
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.clearRect(0, 0, W, H);
 
-      // ── 更新链式物理 ──
-      nodes[0].x += (mouse.x - nodes[0].x) * EASE;
-      nodes[0].y += (mouse.y - nodes[0].y) * EASE;
-      for (let i = 1; i < N; i++) {
-        nodes[i].x += (nodes[i-1].x - nodes[i].x) * CHAIN;
-        nodes[i].y += (nodes[i-1].y - nodes[i].y) * CHAIN;
+      particles.forEach(updateParticle);
+
+      // ── 粒子间连线 ──
+      for (let i = 0; i < particles.length; i++) {
+        const a = particles[i];
+        for (let j = i + 1; j < particles.length; j++) {
+          const b    = particles[j];
+          const dist = Math.hypot(a.x - b.x, a.y - b.y);
+          if (dist < CONNECT_DIST) {
+            const t = 1 - dist / CONNECT_DIST;
+            drawLine(a.x, a.y, b.x, b.y, t * t * 0.28, t * 0.9 + 0.3);
+          }
+        }
+
+        // ── 鼠标到粒子的连线（更亮） ──
+        const md = Math.hypot(mouse.x - a.x, mouse.y - a.y);
+        if (md < MOUSE_DIST) {
+          const t = 1 - md / MOUSE_DIST;
+          drawLine(a.x, a.y, mouse.x, mouse.y, t * t * 0.75, t * 1.2 + 0.3);
+        }
       }
 
-      // ── 绘制渐变连线（仙剑能量线） ──
-      ctx.save();
-      ctx.lineCap = 'round';
-      ctx.lineJoin = 'round';
-      for (let i = 0; i < N - 1; i++) {
-        const t  = 1 - i / (N - 1);   // 1=头，0=尾
-        const t2 = t * t;
+      // ── 绘制粒子点 ──
+      for (const p of particles) {
+        const md = Math.hypot(mouse.x - p.x, mouse.y - p.y);
+        const boost = md < MOUSE_DIST ? (1 - md / MOUSE_DIST) * 0.55 : 0;
+        const alpha = 0.35 + boost;
+        const r     = p.r * (1 + boost * 1.2);
 
-        const x0 = nodes[i].x,   y0 = nodes[i].y;
-        const x1 = nodes[i+1].x, y1 = nodes[i+1].y;
-
-        // 多层描边：外层柔光 + 内层亮线
+        // 发光晕
+        const g = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, r * 3.5);
+        g.addColorStop(0,   `rgba(225,222,195,${alpha * 0.9})`);
+        g.addColorStop(0.5, `rgba(225,222,195,${alpha * 0.25})`);
+        g.addColorStop(1,   `rgba(225,222,195,0)`);
         ctx.beginPath();
-        ctx.moveTo(x0, y0);
-        ctx.lineTo(x1, y1);
-        ctx.strokeStyle = `rgba(225,220,190, ${t2 * 0.18})`;
-        ctx.lineWidth   = t * 5 + 1;
-        ctx.stroke();
-
-        ctx.beginPath();
-        ctx.moveTo(x0, y0);
-        ctx.lineTo(x1, y1);
-        ctx.strokeStyle = `rgba(240,235,210, ${t2 * 0.55})`;
-        ctx.lineWidth   = t * 1.8 + 0.4;
-        ctx.stroke();
-      }
-      ctx.restore();
-
-      // ── 绘制链节点（仙剑光珠） ──
-      for (let i = N - 1; i >= 0; i--) {
-        const t   = 1 - i / (N - 1);
-        const t2  = t * t;
-        const px  = nodes[i].x, py = nodes[i].y;
-        const R   = 1.8 + t * 4.2;   // 光珠半径
-
-        // 外发光晕
-        const grad = ctx.createRadialGradient(px, py, 0, px, py, R * 4);
-        grad.addColorStop(0,   `rgba(225,220,185, ${t2 * 0.75})`);
-        grad.addColorStop(0.45,`rgba(225,220,185, ${t2 * 0.28})`);
-        grad.addColorStop(1,   `rgba(225,220,185, 0)`);
-        ctx.beginPath();
-        ctx.arc(px, py, R * 4, 0, Math.PI * 2);
-        ctx.fillStyle = grad;
+        ctx.arc(p.x, p.y, r * 3.5, 0, Math.PI * 2);
+        ctx.fillStyle = g;
         ctx.fill();
 
-        // 亮核心
+        // 亮核
         ctx.beginPath();
-        ctx.arc(px, py, R * 0.55, 0, Math.PI * 2);
-        ctx.fillStyle = `rgba(255,252,240, ${t2 * 0.95})`;
+        ctx.arc(p.x, p.y, r, 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(240,238,220,${alpha})`;
         ctx.fill();
-      }
-
-      // ── 涟漪（点击效果） ──
-      ripples = ripples.filter(r => r.a > 0.02);
-      for (const rp of ripples) {
-        if (rp.lag > 0) { rp.lag--; continue; }
-        ctx.beginPath();
-        ctx.arc(rp.x, rp.y, rp.r, 0, Math.PI * 2);
-        ctx.strokeStyle = `rgba(225,224,204, ${rp.a})`;
-        ctx.lineWidth   = 1.5;
-        ctx.stroke();
-        rp.r += 4.5;
-        rp.a *= 0.86;
       }
 
       // ── 滞后圆环 ──
