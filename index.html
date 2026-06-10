@@ -3,448 +3,379 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>常用网站导航</title>
+  <title>常用导航</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Almarai:wght@300;400;700;800&family=Instrument+Serif:ital@1&display=swap" rel="stylesheet">
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&display=swap');
-
-    * { margin: 0; padding: 0; box-sizing: border-box; }
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
 
     body {
-      min-height: 100vh;
+      font-family: 'Almarai', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
       background: #000;
-      overflow-x: hidden;
-      font-family: 'Microsoft YaHei', '微软雅黑', sans-serif;
+      height: 100dvh;
+      overflow: hidden;
     }
 
-    /* ── Video ── */
-    .video-wrapper {
+    /* ── Noise texture ── */
+    .noise {
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    }
+
+    /* ── Inset frame (Prisma inset effect) ── */
+    .frame {
       position: fixed;
-      inset: 0;
-      z-index: 0;
+      inset: 14px;
+      border-radius: 26px;
       overflow: hidden;
       background: #000;
     }
 
+    /* ── Video ── */
     #bg-video {
       position: absolute;
       inset: 0;
       width: 100%;
       height: 100%;
       object-fit: cover;
-      transform: translateY(17%);
+      object-position: center top;
     }
 
-    .video-overlay {
+    /* Noise over video */
+    .v-noise {
       position: absolute;
       inset: 0;
-      background: rgba(0, 0, 0, 0.45);
-    }
-
-    /* ── Liquid Glass ── */
-    .liquid-glass {
-      background: rgba(255, 255, 255, 0.01);
-      background-blend-mode: luminosity;
-      backdrop-filter: blur(4px);
-      -webkit-backdrop-filter: blur(4px);
-      border: none;
-      box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.1);
-      position: relative;
-      overflow: hidden;
-    }
-
-    .liquid-glass::before {
-      content: '';
-      position: absolute;
-      inset: 0;
-      border-radius: inherit;
-      padding: 1.4px;
-      background: linear-gradient(
-        180deg,
-        rgba(255,255,255,0.45) 0%,
-        rgba(255,255,255,0.15) 20%,
-        rgba(255,255,255,0)    40%,
-        rgba(255,255,255,0)    60%,
-        rgba(255,255,255,0.15) 80%,
-        rgba(255,255,255,0.45) 100%
-      );
-      -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-      -webkit-mask-composite: xor;
-      mask-composite: exclude;
+      opacity: 0.65;
+      mix-blend-mode: overlay;
       pointer-events: none;
     }
 
-    /* ── Page Shell ── */
+    /* Gradient: dark top for nav · transparent centre · dark bottom for cards */
+    .v-grad {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(
+        to bottom,
+        rgba(0,0,0,0.38) 0%,
+        transparent      26%,
+        transparent      54%,
+        rgba(0,0,0,0.74) 76%,
+        rgba(0,0,0,0.94) 100%
+      );
+      pointer-events: none;
+    }
+
+    /* ── Page shell ── */
     .page {
-      position: relative;
-      z-index: 1;
-      min-height: 100vh;
+      position: absolute;
+      inset: 0;
       display: flex;
       flex-direction: column;
     }
 
-    /* ── Nav ── */
-    nav {
-      padding: 24px;
-      position: relative;
-      z-index: 20;
+    /* ── Nav pill ── */
+    .nb-outer {
+      display: flex;
+      justify-content: center;
+      flex-shrink: 0;
+      opacity: 0;
+      animation: fadeDown 0.55s ease forwards 0.1s;
     }
 
-    .nav-inner {
-      border-radius: 9999px;
-      padding: 12px 24px;
+    .nb {
+      background: #000;
+      border-radius: 0 0 22px 22px;
+      padding: 11px 40px;
       display: flex;
       align-items: center;
-      justify-content: space-between;
-      max-width: 64rem;
-      margin: 0 auto;
+      gap: 48px;
     }
 
-    .nav-logo {
-      display: flex;
-      align-items: center;
-      gap: 8px;
+    .nb a {
+      font-size: 11.5px;
+      font-weight: 400;
+      color: rgba(225, 224, 204, 0.75);
       text-decoration: none;
+      letter-spacing: 0.025em;
+      transition: color 0.18s;
     }
 
-    .nav-logo-text {
-      font-size: 1.125rem;
-      font-weight: 600;
-      color: #fff;
-    }
+    .nb a:hover { color: #E1E0CC; }
 
-    .nav-right {
-      display: flex;
-      align-items: center;
-      gap: 16px;
-    }
-
-    .nav-date {
-      color: rgba(255,255,255,0.5);
-      font-size: 0.8rem;
-      letter-spacing: 1px;
-    }
-
-    .nav-btn {
-      border-radius: 9999px;
-      padding: 8px 24px;
-      color: #fff;
-      background: none;
-      border: none;
-      cursor: pointer;
-      font-size: 0.875rem;
-      font-weight: 500;
-      text-decoration: none;
-      display: inline-flex;
-      align-items: center;
-    }
-
-    /* ── Hero ── */
+    /* ── Hero (takes all remaining space, content centred) ── */
     .hero {
       flex: 1;
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      padding: 32px 24px 48px;
+      padding: 0 32px;
+      margin-top: -28px; /* subtle upward nudge for optical balance */
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      background: rgba(0, 0, 0, 0.42);
+      border: 1px solid rgba(225, 224, 204, 0.13);
+      border-radius: 20px;
+      padding: 5px 14px 5px 10px;
+      margin-bottom: 22px;
+      opacity: 0;
+      animation: fadeUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards 0.28s;
+    }
+
+    .badge-dot {
+      width: 5px;
+      height: 5px;
+      border-radius: 50%;
+      background: #E1E0CC;
+      opacity: 0.5;
+    }
+
+    .badge-text {
+      font-size: 10.5px;
+      color: rgba(225, 224, 204, 0.6);
+      letter-spacing: 0.08em;
+    }
+
+    .title {
+      font-size: clamp(56px, 14vw, 190px);
+      font-weight: 700;
+      color: #E1E0CC;
+      letter-spacing: -0.055em;
+      line-height: 0.88;
       text-align: center;
-      transform: translateY(-4%);
+      opacity: 0;
+      animation: fadeUp 0.75s cubic-bezier(0.16, 1, 0.3, 1) forwards 0.38s;
     }
 
-    .hero-title {
+    .subtitle {
       font-family: 'Instrument Serif', serif;
-      font-size: clamp(2.4rem, 6vw, 4.5rem);
-      color: #fff;
-      margin-bottom: 12px;
-      letter-spacing: -0.02em;
-      line-height: 1.1;
+      font-style: italic;
+      font-size: clamp(13px, 1.5vw, 21px);
+      color: rgba(225, 224, 204, 0.42);
+      margin-top: 16px;
+      opacity: 0;
+      animation: fadeUp 0.75s cubic-bezier(0.16, 1, 0.3, 1) forwards 0.52s;
     }
 
-    .hero-subtitle {
-      color: rgba(255,255,255,0.45);
-      font-size: 0.75rem;
-      margin-bottom: 40px;
-      letter-spacing: 4px;
-      text-transform: uppercase;
+    /* ── Cards grid (anchored to bottom) ── */
+    .cards-outer {
+      flex-shrink: 0;
+      padding: 0 22px 22px;
     }
 
-    /* ── Cards Grid ── */
-    .grid-wrap {
-      width: 100%;
-      max-width: 72rem;
+    .cards {
+      display: grid;
+      grid-template-columns: repeat(6, 1fr);
+      gap: 6px;
+      max-width: 940px;
       margin: 0 auto;
     }
 
-    .cards-grid {
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 14px;
-    }
-
-    @media (max-width: 900px) {
-      .cards-grid { grid-template-columns: repeat(3, 1fr); }
-    }
-
-    @media (max-width: 580px) {
-      .cards-grid { grid-template-columns: repeat(2, 1fr); }
-    }
-
     .card {
-      border-radius: 20px;
       display: flex;
-      flex-direction: column;
       align-items: center;
-      justify-content: center;
-      gap: 12px;
-      padding: 26px 16px;
+      gap: 7px;
+      padding: 9px 12px;
+      border-radius: 10px;
       text-decoration: none;
-      color: rgba(255,255,255,0.75);
-      transition: color 0.22s, transform 0.22s;
+      color: rgba(225, 224, 204, 0.65);
+      background: rgba(8, 8, 8, 0.58);
+      border: 1px solid rgba(225, 224, 204, 0.08);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      transition: background 0.2s, border-color 0.2s, color 0.2s, transform 0.2s;
+      opacity: 0;
+      animation: fadeUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
     }
+
+    /* Staggered entrance */
+    .card:nth-child(1)  { animation-delay: 0.56s; }
+    .card:nth-child(2)  { animation-delay: 0.62s; }
+    .card:nth-child(3)  { animation-delay: 0.68s; }
+    .card:nth-child(4)  { animation-delay: 0.74s; }
+    .card:nth-child(5)  { animation-delay: 0.80s; }
+    .card:nth-child(6)  { animation-delay: 0.86s; }
+    .card:nth-child(7)  { animation-delay: 0.92s; }
+    .card:nth-child(8)  { animation-delay: 0.98s; }
+    .card:nth-child(9)  { animation-delay: 1.04s; }
+    .card:nth-child(10) { animation-delay: 1.10s; }
+    .card:nth-child(11) { animation-delay: 1.16s; }
+    .card:nth-child(12) { animation-delay: 1.22s; }
 
     .card:hover {
-      color: #fff;
-      transform: translateY(-4px);
+      background: rgba(225, 224, 204, 0.07);
+      border-color: rgba(225, 224, 204, 0.22);
+      color: #E1E0CC;
+      transform: translateY(-2px);
     }
 
-    .card:hover .card-icon {
-      background: rgba(255,255,255,0.14);
-    }
+    .ci { font-size: 14px; flex-shrink: 0; line-height: 1; }
 
-    .card-icon {
-      width: 52px;
-      height: 52px;
-      border-radius: 14px;
-      background: rgba(255,255,255,0.07);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 24px;
-      transition: background 0.22s;
-      flex-shrink: 0;
-    }
-
-    .card-name {
-      font-size: 0.875rem;
-      letter-spacing: 0.3px;
+    .cn {
+      font-size: 11.5px;
       font-weight: 400;
+      letter-spacing: 0.01em;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
 
-    /* ── Footer ── */
-    footer {
-      position: relative;
-      z-index: 10;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      gap: 14px;
-      padding: 24px 0 40px;
+    /* ── Keyframes ── */
+    @keyframes fadeDown {
+      from { opacity: 0; transform: translateY(-14px); }
+      to   { opacity: 1; transform: translateY(0); }
     }
 
-    .social-btn {
-      border-radius: 9999px;
-      padding: 14px;
-      color: rgba(255,255,255,0.65);
-      background: none;
-      border: none;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      transition: color 0.22s;
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(14px); }
+      to   { opacity: 1; transform: translateY(0); }
     }
 
-    .social-btn:hover { color: #fff; }
-    .social-btn svg { width: 20px; height: 20px; }
+    /* ── Responsive ── */
+    @media (max-width: 1020px) {
+      .nb { padding: 10px 24px; gap: 30px; }
+      .cards { grid-template-columns: repeat(4, 1fr); }
+      .title { font-size: clamp(52px, 16vw, 140px); }
+    }
+
+    @media (max-width: 660px) {
+      .nb { padding: 8px 16px; gap: 18px; }
+      .nb a { font-size: 10px; }
+      .cards { grid-template-columns: repeat(3, 1fr); }
+      .title { font-size: clamp(44px, 20vw, 90px); }
+    }
+
+    @media (max-width: 420px) {
+      body { overflow-y: auto; height: auto; }
+      .frame { position: relative; inset: auto; margin: 8px; border-radius: 18px; min-height: calc(100dvh - 16px); }
+      .cards { grid-template-columns: repeat(2, 1fr); }
+    }
   </style>
 </head>
 <body>
 
-  <!-- Background Video -->
-  <div class="video-wrapper">
-    <video id="bg-video" muted autoplay playsinline preload="auto" style="opacity:0">
-      <source src="https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20260328_115001_bcdaa3b4-03de-47e7-ad63-ae3e392c32d4.mp4" type="video/mp4">
+  <div class="frame">
+
+    <!-- Background video -->
+    <video id="bg-video" autoplay muted playsinline preload="auto" style="opacity:0">
+      <source src="https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20260405_170732_8a9ccda6-5cff-4628-b164-059c500a2b41.mp4" type="video/mp4">
     </video>
-    <div class="video-overlay"></div>
-  </div>
 
-  <!-- Page -->
-  <div class="page">
+    <!-- Noise + gradient overlays -->
+    <div class="v-noise noise"></div>
+    <div class="v-grad"></div>
 
-    <!-- Nav -->
-    <nav>
-      <div class="nav-inner liquid-glass">
-        <div class="nav-logo">
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <circle cx="12" cy="12" r="10"/>
-            <line x1="2" y1="12" x2="22" y2="12"/>
-            <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
-          </svg>
-          <span class="nav-logo-text">导航站</span>
-        </div>
-        <div class="nav-right">
-          <span class="nav-date" id="current-date"></span>
-          <a href="#" class="nav-btn liquid-glass">工作台</a>
-        </div>
+    <!-- Page content -->
+    <div class="page">
+
+      <!-- Nav pill -->
+      <div class="nb-outer">
+        <nav class="nb">
+          <a href="#">Our story</a>
+          <a href="#">Collective</a>
+          <a href="#">Workshops</a>
+          <a href="#">Programs</a>
+          <a href="#">Inquiries</a>
+        </nav>
       </div>
-    </nav>
 
-    <!-- Hero + Cards -->
-    <main class="hero">
-      <h1 class="hero-title">常用网站导航</h1>
-      <p class="hero-subtitle">Quick Access · 快速访问</p>
+      <!-- Hero: badge + big title + italic subtitle -->
+      <div class="hero">
+        <div class="badge">
+          <div class="badge-dot"></div>
+          <span class="badge-text">NAVIGATION · 导航</span>
+        </div>
+        <h1 class="title">常用导航</h1>
+        <p class="subtitle">Quick Access to Everything</p>
+      </div>
 
-      <div class="grid-wrap">
-        <div class="cards-grid">
+      <!-- 12 navigation cards — 6 × 2 grid at bottom -->
+      <div class="cards-outer">
+        <div class="cards">
 
-          <a class="card liquid-glass" href="https://www.baidu.com" target="_blank" rel="noopener">
-            <div class="card-icon">🔍</div>
-            <span class="card-name">百度搜索</span>
+          <a class="card" href="https://www.baidu.com" target="_blank" rel="noopener">
+            <span class="ci">🔍</span><span class="cn">百度搜索</span>
+          </a>
+          <a class="card" href="https://fanyi.baidu.com" target="_blank" rel="noopener">
+            <span class="ci">🌐</span><span class="cn">百度翻译</span>
+          </a>
+          <a class="card" href="https://map.baidu.com" target="_blank" rel="noopener">
+            <span class="ci">🗺️</span><span class="cn">百度地图</span>
+          </a>
+          <a class="card" href="https://mail.163.com" target="_blank" rel="noopener">
+            <span class="ci">✉️</span><span class="cn">163 邮箱</span>
+          </a>
+          <a class="card" href="https://www.zhihu.com" target="_blank" rel="noopener">
+            <span class="ci">💡</span><span class="cn">知乎</span>
+          </a>
+          <a class="card" href="https://www.jianshu.com" target="_blank" rel="noopener">
+            <span class="ci">✍️</span><span class="cn">简书</span>
           </a>
 
-          <a class="card liquid-glass" href="https://fanyi.baidu.com" target="_blank" rel="noopener">
-            <div class="card-icon">🌐</div>
-            <span class="card-name">百度翻译</span>
+          <a class="card" href="https://www.jyshare.com/front-end/852/?utm_source=heifan" target="_blank" rel="noopener">
+            <span class="ci">🛠️</span><span class="cn">在线编辑器</span>
           </a>
-
-          <a class="card liquid-glass" href="https://map.baidu.com" target="_blank" rel="noopener">
-            <div class="card-icon">🗺️</div>
-            <span class="card-name">百度地图</span>
+          <a class="card" href="http://jira.sanguosha.com:8080/secure/Dashboard.jspa" target="_blank" rel="noopener">
+            <span class="ci">📋</span><span class="cn">Jira</span>
           </a>
-
-          <a class="card liquid-glass" href="https://mail.163.com" target="_blank" rel="noopener">
-            <div class="card-icon">✉️</div>
-            <span class="card-name">163 邮箱</span>
+          <a class="card" href="https://aicoding.dobest.com/employee/usage" target="_blank" rel="noopener">
+            <span class="ci">🤖</span><span class="cn">AI 编程统计</span>
           </a>
-
-          <a class="card liquid-glass" href="https://www.zhihu.com" target="_blank" rel="noopener">
-            <div class="card-icon">💡</div>
-            <span class="card-name">知乎</span>
+          <a class="card" href="https://alidocs.dingtalk.com/i/nodes/dpYLaezmVNL9gXkdI4vMe27D8rMqPxX6?utm_scene=team_space&iframeQuery=" target="_blank" rel="noopener">
+            <span class="ci">📄</span><span class="cn">钉钉文档</span>
           </a>
-
-          <a class="card liquid-glass" href="https://www.jianshu.com" target="_blank" rel="noopener">
-            <div class="card-icon">✍️</div>
-            <span class="card-name">简书</span>
+          <a class="card" href="http://mykt.dobest.com:3000/local/issues" target="_blank" rel="noopener">
+            <span class="ci">🐛</span><span class="cn">项目 Issues</span>
           </a>
-
-          <a class="card liquid-glass" href="https://www.jyshare.com/front-end/852/?utm_source=heifan" target="_blank" rel="noopener">
-            <div class="card-icon">🛠️</div>
-            <span class="card-name">在线编辑器</span>
-          </a>
-
-          <a class="card liquid-glass" href="http://jira.sanguosha.com:8080/secure/Dashboard.jspa" target="_blank" rel="noopener">
-            <div class="card-icon">📋</div>
-            <span class="card-name">Jira</span>
-          </a>
-
-          <a class="card liquid-glass" href="https://aicoding.dobest.com/employee/usage" target="_blank" rel="noopener">
-            <div class="card-icon">🤖</div>
-            <span class="card-name">AI 编程统计</span>
-          </a>
-
-          <a class="card liquid-glass" href="https://alidocs.dingtalk.com/i/nodes/dpYLaezmVNL9gXkdI4vMe27D8rMqPxX6?utm_scene=team_space&iframeQuery=" target="_blank" rel="noopener">
-            <div class="card-icon">📄</div>
-            <span class="card-name">钉钉文档</span>
-          </a>
-
-          <a class="card liquid-glass" href="http://mykt.dobest.com:3000/local/issues" target="_blank" rel="noopener">
-            <div class="card-icon">🐛</div>
-            <span class="card-name">项目 Issues</span>
-          </a>
-
-          <a class="card liquid-glass" href="https://www.doubao.com/chat" target="_blank" rel="noopener">
-            <div class="card-icon">💬</div>
-            <span class="card-name">豆包</span>
+          <a class="card" href="https://www.doubao.com/chat" target="_blank" rel="noopener">
+            <span class="ci">💬</span><span class="cn">豆包</span>
           </a>
 
         </div>
       </div>
-    </main>
 
-    <!-- Footer -->
-    <footer>
-      <button class="social-btn liquid-glass" aria-label="Instagram">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <rect x="2" y="2" width="20" height="20" rx="5" ry="5"/>
-          <circle cx="12" cy="12" r="4"/>
-          <circle cx="17.5" cy="6.5" r="0.5" fill="currentColor" stroke="none"/>
-        </svg>
-      </button>
-      <button class="social-btn liquid-glass" aria-label="Twitter">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M22 4s-.7 2.1-2 3.4c1.6 10-9.4 17.3-18 11.6 2.2.1 4.4-.6 6-2C3 15.5.5 9.6 3 5c2.2 2.6 5.6 4.1 9 4-.9-4.2 4-6.6 7-3.8 1.1 0 3-1.2 3-1.2z"/>
-        </svg>
-      </button>
-      <button class="social-btn liquid-glass" aria-label="Website">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <circle cx="12" cy="12" r="10"/>
-          <line x1="2" y1="12" x2="22" y2="12"/>
-          <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
-        </svg>
-      </button>
-    </footer>
-
+    </div>
   </div>
 
   <script>
-    // ── Date ──
-    document.getElementById('current-date').textContent =
-      new Date().toLocaleDateString('zh-CN', { year: 'numeric', month: 'long', day: 'numeric' });
-
-    // ── Video fade system (requestAnimationFrame, no CSS transitions) ──
+    // ── Video fade system (250ms, rAF, no CSS transitions) ──
     const video = document.getElementById('bg-video');
     let fadingOutRef = false;
     let currentAnimFrame = null;
 
     function cancelFade() {
-      if (currentAnimFrame !== null) {
-        cancelAnimationFrame(currentAnimFrame);
-        currentAnimFrame = null;
-      }
+      if (currentAnimFrame !== null) { cancelAnimationFrame(currentAnimFrame); currentAnimFrame = null; }
     }
 
     function fadeTo(target, duration, onComplete) {
       cancelFade();
       const start = parseFloat(video.style.opacity) || 0;
       const t0 = performance.now();
-
       function step(now) {
         const p = Math.min((now - t0) / duration, 1);
         video.style.opacity = start + (target - start) * p;
-        if (p < 1) {
-          currentAnimFrame = requestAnimationFrame(step);
-        } else {
-          currentAnimFrame = null;
-          onComplete && onComplete();
-        }
+        if (p < 1) { currentAnimFrame = requestAnimationFrame(step); }
+        else { currentAnimFrame = null; onComplete && onComplete(); }
       }
-
       currentAnimFrame = requestAnimationFrame(step);
     }
 
-    function fadeIn()  { fadingOutRef = false; fadeTo(1, 500); }
-    function fadeOut(cb) { fadingOutRef = true; fadeTo(0, 500, cb); }
+    const fadeIn  = ()   => { fadingOutRef = false; fadeTo(1, 250); };
+    const fadeOut = (cb) => { fadingOutRef = true;  fadeTo(0, 250, cb); };
 
     function restartVideo() {
       video.style.opacity = '0';
       fadingOutRef = false;
-      setTimeout(() => {
-        video.currentTime = 0;
-        video.play().then(fadeIn).catch(() => {});
-      }, 100);
+      setTimeout(() => { video.currentTime = 0; video.play().then(fadeIn).catch(() => {}); }, 100);
     }
 
-    video.addEventListener('canplay', () => {
-      if (parseFloat(video.style.opacity) < 0.05) fadeIn();
-    });
-
-    video.addEventListener('timeupdate', () => {
-      if (!fadingOutRef && video.duration && (video.duration - video.currentTime) <= 0.55) {
-        fadeOut(restartVideo);
-      }
-    });
-
-    video.addEventListener('ended', restartVideo);
-
+    video.addEventListener('canplay',     () => { if (parseFloat(video.style.opacity) < 0.05) fadeIn(); });
+    video.addEventListener('timeupdate',  () => { if (!fadingOutRef && video.duration && (video.duration - video.currentTime) <= 0.55) fadeOut(restartVideo); });
+    video.addEventListener('ended',       restartVideo);
     video.play().catch(() => {});
   </script>
 
