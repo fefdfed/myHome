@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>常用网站导航</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      min-height: 100vh;
+      background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Microsoft YaHei', '微软雅黑', sans-serif;
+    }
+
+    h1 {
+      color: #e0e0e0;
+      font-size: 1.6rem;
+      font-weight: 300;
+      letter-spacing: 4px;
+      margin-bottom: 48px;
+      opacity: 0.7;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(3, 180px);
+      gap: 20px;
+    }
+
+    .card {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      padding: 28px 20px;
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 16px;
+      text-decoration: none;
+      color: #ccc;
+      transition: all 0.25s ease;
+      cursor: pointer;
+    }
+
+    .card:hover {
+      background: rgba(255, 255, 255, 0.14);
+      border-color: rgba(255, 255, 255, 0.3);
+      color: #fff;
+      transform: translateY(-4px);
+      box-shadow: 0 12px 32px rgba(0, 0, 0, 0.3);
+    }
+
+    .card .icon {
+      width: 52px;
+      height: 52px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 26px;
+    }
+
+    .card .name {
+      font-size: 0.95rem;
+      letter-spacing: 1px;
+    }
+
+    /* 各站点图标背景色 */
+    .baidu      .icon { background: #2932e1; }
+    .fanyi      .icon { background: #4e6ef2; }
+    .map        .icon { background: #e60026; }
+    .mail163    .icon { background: #d63031; }
+    .zhihu      .icon { background: #0084ff; }
+    .jianshu    .icon { background: #ea6f5a; }
+    .jyshare    .icon { background: #27ae60; }
+    .jira       .icon { background: #0052cc; }
+    .aicoding   .icon { background: #8e44ad; }
+    .alidocs    .icon { background: #ff6900; }
+    .mykt       .icon { background: #16a085; }
+    .doubao     .icon { background: #1a73e8; }
+
+    footer {
+      margin-top: 56px;
+      color: rgba(255,255,255,0.2);
+      font-size: 0.78rem;
+      letter-spacing: 2px;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>常用网站导航</h1>
+
+  <div class="grid">
+
+    <a class="card baidu" href="https://www.baidu.com" target="_blank" rel="noopener">
+      <div class="icon">🔍</div>
+      <span class="name">百度搜索</span>
+    </a>
+
+    <a class="card fanyi" href="https://fanyi.baidu.com" target="_blank" rel="noopener">
+      <div class="icon">🌐</div>
+      <span class="name">百度翻译</span>
+    </a>
+
+    <a class="card map" href="https://map.baidu.com" target="_blank" rel="noopener">
+      <div class="icon">🗺️</div>
+      <span class="name">百度地图</span>
+    </a>
+
+    <a class="card mail163" href="https://mail.163.com" target="_blank" rel="noopener">
+      <div class="icon">✉️</div>
+      <span class="name">163 邮箱</span>
+    </a>
+
+    <a class="card zhihu" href="https://www.zhihu.com" target="_blank" rel="noopener">
+      <div class="icon">💡</div>
+      <span class="name">知乎</span>
+    </a>
+
+    <a class="card jianshu" href="https://www.jianshu.com" target="_blank" rel="noopener">
+      <div class="icon">✍️</div>
+      <span class="name">简书</span>
+    </a>
+
+    <a class="card jyshare" href="https://www.jyshare.com/front-end/852/?utm_source=heifan" target="_blank" rel="noopener">
+      <div class="icon">🛠️</div>
+      <span class="name">在线编辑器</span>
+    </a>
+
+    <a class="card jira" href="http://jira.sanguosha.com:8080/secure/Dashboard.jspa" target="_blank" rel="noopener">
+      <div class="icon">📋</div>
+      <span class="name">Jira</span>
+    </a>
+
+    <a class="card aicoding" href="https://aicoding.dobest.com/employee/usage" target="_blank" rel="noopener">
+      <div class="icon">🤖</div>
+      <span class="name">AI 编程统计</span>
+    </a>
+
+    <a class="card alidocs" href="https://alidocs.dingtalk.com/i/nodes/dpYLaezmVNL9gXkdI4vMe27D8rMqPxX6?utm_scene=team_space&iframeQuery=" target="_blank" rel="noopener">
+      <div class="icon">📄</div>
+      <span class="name">钉钉文档</span>
+    </a>
+
+    <a class="card mykt" href="http://mykt.dobest.com:3000/local/issues" target="_blank" rel="noopener">
+      <div class="icon">🐛</div>
+      <span class="name">项目 Issues</span>
+    </a>
+
+    <a class="card doubao" href="https://www.doubao.com/chat" target="_blank" rel="noopener">
+      <div class="icon">💬</div>
+      <span class="name">豆包</span>
+    </a>
+
+  </div>
+
+  <footer>NAVIGATION · 导航页</footer>
+
+</body>
+</html>
