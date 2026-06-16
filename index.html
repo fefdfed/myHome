@@ -525,7 +525,7 @@
 
   <!-- Weather widget (inside frame, absolute positioned) -->
   <div class="weather-widget" id="weather-widget">
-    <div class="ww-city" id="ww-city">📍 定位中…</div>
+    <div class="ww-city" id="ww-city">📍 上海松江</div>
     <div class="ww-now">
       <div class="ww-icon" id="ww-icon">🌡️</div>
       <div>
@@ -768,7 +768,7 @@
       71:['小雪','🌨️'],73:['中雪','🌨️'],   75:['大雪','❄️'],  77:['冰粒','🌨️'],
       80:['阵雨','🌦️'],81:['阵雨','🌧️'],   82:['强阵雨','🌧️'],
       85:['阵雪','🌨️'],86:['强阵雪','❄️'],
-      95:['雷暴','⛈️'],96:['雷暴夹雹','⛈️'],99:['强雷暴','⛈️'],
+      95:['雷暴','⛈️'],96:['雷暴','⛈️'],   99:['强雷暴','⛈️'],
     };
     const WEEK = ['日','一','二','三','四','五','六'];
 
@@ -780,56 +780,51 @@
       return '周' + WEEK[new Date(dateStr).getDay()];
     }
 
-    function renderWeather(city, data) {
-      const cur = data.current, daily = data.daily;
-      const [desc, icon] = wmoInfo(cur.weathercode);
+    function renderWeather(city, now, daily) {
       document.getElementById('ww-city').textContent = '📍 ' + city;
-      document.getElementById('ww-icon').textContent = icon;
-      document.getElementById('ww-temp').textContent = Math.round(cur.temperature_2m) + '°';
-      document.getElementById('ww-desc').innerHTML =
-        desc + '<br>体感 ' + Math.round(cur.apparent_temperature) + '°';
+      document.getElementById('ww-icon').textContent = now.icon;
+      document.getElementById('ww-temp').textContent = now.temp + '°';
+      document.getElementById('ww-desc').innerHTML = now.text + '<br>体感 ' + now.feelsLike + '°';
       const fc = document.getElementById('ww-forecast');
       fc.innerHTML = '';
-      for (let i = 0; i < 7; i++) {
-        const [desc, icon] = wmoInfo(daily.weathercode[i]);
+      daily.forEach((d, i) => {
         const el = document.createElement('div');
         el.className = 'ww-day';
         el.innerHTML =
-          `<span class="ww-day-label">${dayLabel(daily.time[i], i)}</span>` +
-          `<span class="ww-day-icon">${icon}</span>` +
-          `<span class="ww-day-desc">${desc}</span>` +
-          `<span class="ww-day-temp">${Math.round(daily.temperature_2m_max[i])}°/${Math.round(daily.temperature_2m_min[i])}°</span>`;
+          `<span class="ww-day-label">${dayLabel(d.date, i)}</span>` +
+          `<span class="ww-day-icon">${d.icon}</span>` +
+          `<span class="ww-day-desc">${d.text}</span>` +
+          `<span class="ww-day-temp">${d.tempMax}°/${d.tempMin}°</span>`;
         fc.appendChild(el);
-      }
+      });
+    }
+
+    function parseData(data) {
+      const c = data.current;
+      const [text, icon] = wmoInfo(c.weathercode);
+      const now = { temp: Math.round(c.temperature_2m), feelsLike: Math.round(c.apparent_temperature), text, icon };
+      const daily = data.daily.time.map((date, i) => {
+        const [t, ic] = wmoInfo(data.daily.weathercode[i]);
+        return { date, text: t, icon: ic, tempMax: Math.round(data.daily.temperature_2m_max[i]), tempMin: Math.round(data.daily.temperature_2m_min[i]) };
+      });
+      return { now, daily };
     }
 
     async function loadWeather() {
-      const WEATHER_URL = (lat, lon, tz) =>
-        `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}` +
-        `&current=temperature_2m,weathercode,apparent_temperature` +
-        `&daily=temperature_2m_max,temperature_2m_min,weathercode` +
-        `&timezone=${encodeURIComponent(tz)}&forecast_days=7`;
       try {
-        const pos = await new Promise((res, rej) =>
-          navigator.geolocation.getCurrentPosition(res, rej, { timeout: 6000 })
-        );
-        const { latitude: lat, longitude: lon } = pos.coords;
-        const [geoRes, wRes] = await Promise.all([
-          fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=json&accept-language=zh`),
-          fetch(WEATHER_URL(lat, lon, 'auto'))
-        ]);
-        const [geo, w] = await Promise.all([geoRes.json(), wRes.json()]);
-        const city = geo.address.city || geo.address.town || geo.address.county || geo.address.state || '当前位置';
-        renderWeather(city, w);
+        const data = await fetch(
+          `https://api.open-meteo.com/v1/forecast?latitude=31.02&longitude=121.23` +
+          `&current=temperature_2m,weathercode,apparent_temperature` +
+          `&daily=temperature_2m_max,temperature_2m_min,weathercode` +
+          `&timezone=Asia%2FShanghai&forecast_days=7`
+        ).then(r => r.json());
+        const { now, daily } = parseData(data);
+        renderWeather('上海松江', now, daily);
       } catch {
-        try {
-          const w = await fetch(WEATHER_URL(31.02, 121.23, 'Asia/Shanghai')).then(r => r.json());
-          renderWeather('上海松江', w);
-        } catch {
-          document.getElementById('ww-city').textContent = '天气获取失败';
-        }
+        document.getElementById('ww-city').textContent = '天气获取失败';
       }
     }
+    loadWeather();
     loadWeather();
   </script>
 
