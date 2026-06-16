@@ -335,6 +335,70 @@
     body.cursor-hover #cursor-dot  { transform: translate(-50%,-50%) scale(1.7); }
     body.cursor-hover #cursor-ring { width: 58px; height: 58px; border-color: rgba(225,224,204,0.85); }
 
+    /* ── Weather widget ── */
+    .weather-widget {
+      position: absolute;
+      top: 58px;
+      right: 22px;
+      z-index: 10;
+      width: 212px;
+      background: rgba(6, 6, 6, 0.62);
+      border: 1px solid rgba(225, 224, 204, 0.10);
+      border-radius: 14px;
+      backdrop-filter: blur(18px);
+      -webkit-backdrop-filter: blur(18px);
+      padding: 14px 14px 12px;
+      color: rgba(225, 224, 204, 0.75);
+      opacity: 0;
+      animation: fadeDown 0.55s ease forwards 1.2s;
+    }
+
+    .ww-city {
+      font-size: 10.5px;
+      color: rgba(225, 224, 204, 0.42);
+      margin-bottom: 9px;
+      letter-spacing: 0.04em;
+    }
+
+    .ww-now { display: flex; align-items: flex-start; gap: 8px; margin-bottom: 10px; }
+
+    .ww-icon { font-size: 34px; line-height: 1; flex-shrink: 0; }
+
+    .ww-temp {
+      font-size: 30px;
+      font-weight: 700;
+      color: #E1E0CC;
+      line-height: 1;
+      letter-spacing: -0.04em;
+    }
+
+    .ww-desc {
+      font-size: 10.5px;
+      color: rgba(225, 224, 204, 0.45);
+      margin-top: 3px;
+      line-height: 1.5;
+    }
+
+    .ww-divider {
+      height: 1px;
+      background: rgba(225, 224, 204, 0.08);
+      margin-bottom: 10px;
+    }
+
+    .ww-forecast { display: flex; flex-direction: column; gap: 5px; }
+
+    .ww-day { display: flex; align-items: center; gap: 7px; }
+
+    .ww-day-label { font-size: 11px; color: rgba(225, 224, 204, 0.38); width: 20px; flex-shrink: 0; }
+
+    .ww-day-icon { font-size: 15px; width: 20px; text-align: center; flex-shrink: 0; }
+
+    .ww-day-desc { font-size: 11px; color: rgba(225, 224, 204, 0.6); flex: 1; }
+
+    .ww-day-temp { font-size: 11px; color: rgba(225, 224, 204, 0.78); white-space: nowrap; }
+
+    @media (max-width: 660px) { .weather-widget { display: none; } }
+
     /* ── Responsive ── */
     @media (max-width: 1020px) {
       .nb { padding: 10px 24px; gap: 30px; }
@@ -457,6 +521,20 @@
       <button id="music-btn" title="播放/暂停音乐">♪</button>
 
     </div>
+  </div>
+
+  <!-- Weather widget (inside frame, absolute positioned) -->
+  <div class="weather-widget" id="weather-widget">
+    <div class="ww-city" id="ww-city">📍 定位中…</div>
+    <div class="ww-now">
+      <div class="ww-icon" id="ww-icon">🌡️</div>
+      <div>
+        <div class="ww-temp" id="ww-temp">–°</div>
+        <div class="ww-desc" id="ww-desc">加载中</div>
+      </div>
+    </div>
+    <div class="ww-divider"></div>
+    <div class="ww-forecast" id="ww-forecast"></div>
   </div>
 
   <!-- Background music -->
@@ -680,6 +758,79 @@
       if (music.paused) tryPlay();
       document.removeEventListener('click', startOnce);
     }, { once: true });
+
+    // ── Weather widget ──
+    const WMO = {
+      0:['晴','☀️'],   1:['晴间多云','🌤️'], 2:['多云','⛅'],    3:['阴','☁️'],
+      45:['雾','🌫️'],  48:['浓雾','🌫️'],
+      51:['毛毛雨','🌦️'],53:['小雨','🌦️'],  55:['中雨','🌦️'],
+      61:['小雨','🌧️'],63:['中雨','🌧️'],   65:['大雨','🌧️'],
+      71:['小雪','🌨️'],73:['中雪','🌨️'],   75:['大雪','❄️'],  77:['冰粒','🌨️'],
+      80:['阵雨','🌦️'],81:['阵雨','🌧️'],   82:['强阵雨','🌧️'],
+      85:['阵雪','🌨️'],86:['强阵雪','❄️'],
+      95:['雷暴','⛈️'],96:['雷暴夹雹','⛈️'],99:['强雷暴','⛈️'],
+    };
+    const WEEK = ['日','一','二','三','四','五','六'];
+
+    function wmoInfo(code) { return WMO[code] || ['未知','🌡️']; }
+
+    function dayLabel(dateStr, i) {
+      if (i === 0) return '今';
+      if (i === 1) return '明';
+      return '周' + WEEK[new Date(dateStr).getDay()];
+    }
+
+    function renderWeather(city, data) {
+      const cur = data.current, daily = data.daily;
+      const [desc, icon] = wmoInfo(cur.weathercode);
+      document.getElementById('ww-city').textContent = '📍 ' + city;
+      document.getElementById('ww-icon').textContent = icon;
+      document.getElementById('ww-temp').textContent = Math.round(cur.temperature_2m) + '°';
+      document.getElementById('ww-desc').innerHTML =
+        desc + '<br>体感 ' + Math.round(cur.apparent_temperature) + '°';
+      const fc = document.getElementById('ww-forecast');
+      fc.innerHTML = '';
+      for (let i = 0; i < 7; i++) {
+        const [desc, icon] = wmoInfo(daily.weathercode[i]);
+        const el = document.createElement('div');
+        el.className = 'ww-day';
+        el.innerHTML =
+          `<span class="ww-day-label">${dayLabel(daily.time[i], i)}</span>` +
+          `<span class="ww-day-icon">${icon}</span>` +
+          `<span class="ww-day-desc">${desc}</span>` +
+          `<span class="ww-day-temp">${Math.round(daily.temperature_2m_max[i])}°/${Math.round(daily.temperature_2m_min[i])}°</span>`;
+        fc.appendChild(el);
+      }
+    }
+
+    async function loadWeather() {
+      const WEATHER_URL = (lat, lon, tz) =>
+        `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}` +
+        `&current=temperature_2m,weathercode,apparent_temperature` +
+        `&daily=temperature_2m_max,temperature_2m_min,weathercode` +
+        `&timezone=${encodeURIComponent(tz)}&forecast_days=7`;
+      try {
+        const pos = await new Promise((res, rej) =>
+          navigator.geolocation.getCurrentPosition(res, rej, { timeout: 6000 })
+        );
+        const { latitude: lat, longitude: lon } = pos.coords;
+        const [geoRes, wRes] = await Promise.all([
+          fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=json&accept-language=zh`),
+          fetch(WEATHER_URL(lat, lon, 'auto'))
+        ]);
+        const [geo, w] = await Promise.all([geoRes.json(), wRes.json()]);
+        const city = geo.address.city || geo.address.town || geo.address.county || geo.address.state || '当前位置';
+        renderWeather(city, w);
+      } catch {
+        try {
+          const w = await fetch(WEATHER_URL(31.02, 121.23, 'Asia/Shanghai')).then(r => r.json());
+          renderWeather('上海松江', w);
+        } catch {
+          document.getElementById('ww-city').textContent = '天气获取失败';
+        }
+      }
+    }
+    loadWeather();
   </script>
 
 </body>
