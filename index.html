@@ -205,6 +205,9 @@
     .card:nth-child(10) { animation-delay: 1.10s; }
     .card:nth-child(11) { animation-delay: 1.16s; }
     .card:nth-child(12) { animation-delay: 1.22s; }
+    .card:nth-child(13) { animation-delay: 1.28s; }
+    .card:nth-child(14) { animation-delay: 1.34s; }
+    .card:nth-child(15) { animation-delay: 1.40s; }
 
     .card:hover {
       background: rgba(225, 224, 204, 0.07);
@@ -263,7 +266,38 @@
       letter-spacing: 0.04em;
     }
 
-    /* ── Custom cursor ── */
+    /* ── Music button ── */
+    #music-btn {
+      position: absolute;
+      bottom: 22px;
+      right: 28px;
+      z-index: 20;
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: rgba(8, 8, 8, 0.58);
+      border: 1px solid rgba(225, 224, 204, 0.18);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+      color: rgba(225, 224, 204, 0.65);
+      cursor: pointer !important;
+      transition: background 0.2s, border-color 0.2s, color 0.2s, transform 0.2s;
+      opacity: 0;
+      animation: fadeUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards 1.4s;
+    }
+
+    #music-btn:hover {
+      background: rgba(225, 224, 204, 0.1);
+      border-color: rgba(225, 224, 204, 0.4);
+      color: #E1E0CC;
+      transform: scale(1.12);
+    }
+
+    #music-btn.playing { color: #E1E0CC; }
     * { cursor: none !important; }
 
     #cursor-dot {
@@ -400,6 +434,16 @@
             <span class="ci">💬</span><span class="cn">豆包</span>
           </a>
 
+          <a class="card" href="https://tool.liumingye.cn/" target="_blank" rel="noopener">
+            <span class="ci">🎵</span><span class="cn">在线音乐</span>
+          </a>
+          <a class="card" href="https://github.com/login" target="_blank" rel="noopener">
+            <span class="ci">🐱</span><span class="cn">GitHub</span>
+          </a>
+          <a class="card" href="https://www.pexels.com/zh-cn/" target="_blank" rel="noopener">
+            <span class="ci">📷</span><span class="cn">Pexels 图库</span>
+          </a>
+
         </div>
       </div>
 
@@ -409,8 +453,16 @@
         <span class="owner-text">赖路桥的个人导航</span>
       </div>
 
+      <!-- Music control button -->
+      <button id="music-btn" title="播放/暂停音乐">♪</button>
+
     </div>
   </div>
+
+  <!-- Background music -->
+  <audio id="bg-music" loop preload="auto">
+    <source src="鼓声 (升阳律).mp3" type="audio/mpeg">
+  </audio>
 
   <script>
     // ── 粒子网格 + 鼠标吸引特效 ──
@@ -600,6 +652,34 @@
     video.addEventListener('timeupdate',  () => { if (!fadingOutRef && video.duration && (video.duration - video.currentTime) <= 0.55) fadeOut(restartVideo); });
     video.addEventListener('ended',       restartVideo);
     video.play().catch(() => {});
+
+    // ── Background music ──
+    const music    = document.getElementById('bg-music');
+    const musicBtn = document.getElementById('music-btn');
+
+    function tryPlay() {
+      music.volume = 0.45;
+      music.play().then(() => {
+        musicBtn.textContent = '♬';
+        musicBtn.classList.add('playing');
+      }).catch(() => {});
+    }
+
+    musicBtn.addEventListener('click', () => {
+      if (music.paused) {
+        tryPlay();
+      } else {
+        music.pause();
+        musicBtn.textContent = '♪';
+        musicBtn.classList.remove('playing');
+      }
+    });
+
+    // 首次用户交互后自动播放
+    document.addEventListener('click', function startOnce() {
+      if (music.paused) tryPlay();
+      document.removeEventListener('click', startOnce);
+    }, { once: true });
   </script>
 
 </body>
