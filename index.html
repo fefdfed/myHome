@@ -73,34 +73,6 @@
       flex-direction: column;
     }
 
-    /* ── Nav pill ── */
-    .nb-outer {
-      display: flex;
-      justify-content: center;
-      flex-shrink: 0;
-      opacity: 0;
-      animation: fadeDown 0.55s ease forwards 0.1s;
-    }
-
-    .nb {
-      background: #000;
-      border-radius: 0 0 22px 22px;
-      padding: 11px 40px;
-      display: flex;
-      align-items: center;
-      gap: 48px;
-    }
-
-    .nb a {
-      font-size: 11.5px;
-      font-weight: 400;
-      color: rgba(225, 224, 204, 0.75);
-      text-decoration: none;
-      letter-spacing: 0.025em;
-      transition: color 0.18s;
-    }
-
-    .nb a:hover { color: #E1E0CC; }
 
     /* ── Hero (takes all remaining space, content centred) ── */
     .hero {
@@ -338,7 +310,7 @@
     /* ── Weather widget ── */
     .weather-widget {
       position: absolute;
-      top: 58px;
+      top: 22px;
       right: 22px;
       z-index: 10;
       width: 212px;
@@ -407,8 +379,6 @@
     }
 
     @media (max-width: 660px) {
-      .nb { padding: 8px 16px; gap: 18px; }
-      .nb a { font-size: 10px; }
       .cards { grid-template-columns: repeat(3, 1fr); }
       .title { font-size: clamp(44px, 20vw, 90px); }
     }
@@ -441,17 +411,6 @@
 
     <!-- Page content -->
     <div class="page">
-
-      <!-- Nav pill -->
-      <div class="nb-outer">
-        <nav class="nb">
-          <a href="#">Our story</a>
-          <a href="#">Collective</a>
-          <a href="#">Workshops</a>
-          <a href="#">Programs</a>
-          <a href="#">Inquiries</a>
-        </nav>
-      </div>
 
       <!-- Hero: spacer only -->
       <div class="hero"></div>
